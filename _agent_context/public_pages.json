@@ -1,4 +1,20 @@
 {
   "version": 1,
-  "pages": []
+  "pages": [
+    {
+      "slug": "termin-abstimmen",
+      "type": "custom",
+      "entity": "antworten",
+      "title": "Termin abstimmen",
+      "published": true,
+      "fields": [
+        "umfrage",
+        "terminvorschlag",
+        "teilnehmer_vorname",
+        "teilnehmer_nachname",
+        "antwort"
+      ],
+      "policy": null
+    }
+  ]
 }

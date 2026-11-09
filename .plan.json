@@ -48,10 +48,10 @@
           "op": "create",
           "when": "always",
           "fields": {
-            "titel": "user",
-            "beschreibung": "user",
             "ort": "user",
-            "status": "fixed:offen"
+            "titel": "user",
+            "status": "fixed:offen",
+            "beschreibung": "user"
           },
           "multiple": false,
           "needs": {},
@@ -62,9 +62,9 @@
           "op": "create",
           "when": "always",
           "fields": {
-            "umfrage": "picked",
+            "ende": "user",
             "beginn": "user",
-            "ende": "user"
+            "umfrage": "picked"
           },
           "multiple": true,
           "needs": {},
@@ -72,7 +72,7 @@
         }
       ],
       "required": [],
-      "brief": "# Flow `umfrage-anlegen` — Umfrage mit Terminen anlegen\nDer Organisator legt eine Umfrage mit Titel, Beschreibung und Ort an und trägt gleich mehrere Terminvorschläge mit Beginn und Ende ein.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAnlegenFlow } from '@/lib/journey/flows/UmfrageAnlegen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: umfrage), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Titel, Beschreibung und Ort der Umfrage eingeben\n2. Mehrere Terminvorschläge mit Beginn und Ende erfassen\n3. Speichern; die Umfrage ist offen und der Link steht bereit\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `umfragen`:\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `beschreibung`: the user enters it (bind it through the layer: form.field/…)\n    - `ort`: the user enters it (bind it through the layer: form.field/…)\n    - `status`: fixed value `offen` — set it in the plan step's values, never ask\n- creates `terminvorschlaege` — SEVERAL per run: `flow.lists.terminvorschlaege` holds the entries (add/remove/edit), render the editor's fields inside `<ListEntries list={flow.lists.terminvorschlaege}>` on their own step; the plan creates one record per entry:\n    - `umfrage`: from the record the user picks in this flow\n    - `beginn`: the user enters it (bind it through the layer: form.field/…)\n    - `ende`: the user enters it (bind it through the layer: form.field/…)\n\n## Narrow these picks (the plan has no filter for them — J-3)\n- `umfrage` picks `umfragen`, but the plan calls 'status' its status field: pass `where: { umfrage: r => … }` to the hook so the step offers only the records that belong here (the open ones, the ones of the picked parent) — never every record of every state\n\n## Success page\n- shows: `umfragen.titel`, `umfragen.status`\n- next flows to offer: `umfrage-abschliessen`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.finaler_termin` (owner: intent `umfrage-abschliessen`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
+      "brief": "# Flow `umfrage-anlegen` — Umfrage mit Terminen anlegen\nDer Organisator legt eine Umfrage mit Titel, Beschreibung und Ort an und trägt gleich mehrere Terminvorschläge mit Beginn und Ende ein.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAnlegenFlow } from '@/lib/journey/flows/UmfrageAnlegen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: umfrage), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Titel, Beschreibung und Ort der Umfrage eingeben\n2. Mehrere Terminvorschläge mit Beginn und Ende erfassen\n3. Speichern; die Umfrage ist offen und der Link steht bereit\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `umfragen`:\n    - `ort`: the user enters it (bind it through the layer: form.field/…)\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `status`: fixed value `offen` — set it in the plan step's values, never ask\n    - `beschreibung`: the user enters it (bind it through the layer: form.field/…)\n- creates `terminvorschlaege` — SEVERAL per run: `flow.lists.terminvorschlaege` holds the entries (add/remove/edit), render the editor's fields inside `<ListEntries list={flow.lists.terminvorschlaege}>` on their own step; the plan creates one record per entry:\n    - `ende`: the user enters it (bind it through the layer: form.field/…)\n    - `beginn`: the user enters it (bind it through the layer: form.field/…)\n    - `umfrage`: from the record the user picks in this flow\n\n## Narrow these picks (the plan has no filter for them — J-3)\n- `umfrage` picks `umfragen`, but the plan calls 'status' its status field: pass `where: { umfrage: r => … }` to the hook so the step offers only the records that belong here (the open ones, the ones of the picked parent) — never every record of every state\n\n## Success page\n- shows: `umfragen.titel`, `umfragen.status`\n- next flows to offer: `umfrage-abschliessen`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.finaler_termin` (owner: intent `umfrage-abschliessen`)\n- `antworten.umfrage` (owner: intent `termin-abstimmen-page`)\n- `antworten.terminvorschlag` (owner: intent `termin-abstimmen-page`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
     },
     {
       "slug": "umfrage-abschliessen",
@@ -88,8 +88,8 @@
           "op": "update",
           "when": "always",
           "fields": {
-            "finaler_termin": "picked",
-            "status": "fixed:geschlossen"
+            "status": "fixed:geschlossen",
+            "finaler_termin": "picked"
           },
           "multiple": false,
           "needs": {},
@@ -97,7 +97,32 @@
         }
       ],
       "required": [],
-      "brief": "# Flow `umfrage-abschliessen` — Finalen Termin festlegen und Umfrage schließen\nDer Organisator wählt aus den Terminvorschlägen der Umfrage den finalen Termin und schließt die Umfrage; danach ist keine Abstimmung mehr möglich.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAbschliessenFlow } from '@/lib/journey/flows/UmfrageAbschliessen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: finaler_termin), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. This flow CHANGES a record of `umfragen`: `{...flow.picks.umfragen.select} {...flow.pick('umfragen')}` picks it, the hook prefills the form with its current values and updates THAT record — never a create step, never a list from useDashboardData. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Offene Umfrage wählen\n2. Finalen Termin aus den Terminvorschlägen dieser Umfrage wählen\n3. Umfrage schließen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- updates `umfragen`:\n    - `finaler_termin`: from the record the user picks in this flow\n    - `status`: fixed value `geschlossen` — set it in the plan step's values, never ask\n\n## Reads\n- `umfragen` columns titel, ort, status\n- `terminvorschlaege` columns beginn, ende, umfrage\n\n## Success page\n- the success page offers the way back — `undo={flow.undo}` on <SuccessStep>: „Umfrage wieder öffnen“ sets status=offen\n- shows: `umfragen.titel`, `umfragen.finaler_termin`, `umfragen.status`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.titel` (owner: intent `umfrage-anlegen`)\n- `umfragen.beschreibung` (owner: intent `umfrage-anlegen`)\n- `umfragen.ort` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.umfrage` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.beginn` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.ende` (owner: intent `umfrage-anlegen`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
+      "brief": "# Flow `umfrage-abschliessen` — Finalen Termin festlegen und Umfrage schließen\nDer Organisator wählt aus den Terminvorschlägen der Umfrage den finalen Termin und schließt die Umfrage; danach ist keine Abstimmung mehr möglich.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAbschliessenFlow } from '@/lib/journey/flows/UmfrageAbschliessen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: finaler_termin), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. This flow CHANGES a record of `umfragen`: `{...flow.picks.umfragen.select} {...flow.pick('umfragen')}` picks it, the hook prefills the form with its current values and updates THAT record — never a create step, never a list from useDashboardData. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Offene Umfrage wählen\n2. Finalen Termin aus den Terminvorschlägen dieser Umfrage wählen\n3. Umfrage schließen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- updates `umfragen`:\n    - `status`: fixed value `geschlossen` — set it in the plan step's values, never ask\n    - `finaler_termin`: from the record the user picks in this flow\n\n## Reads\n- `umfragen` columns titel, ort, status\n- `terminvorschlaege` columns beginn, ende, umfrage\n\n## Success page\n- the success page offers the way back — `undo={flow.undo}` on <SuccessStep>: „Umfrage wieder öffnen“ sets status=offen\n- shows: `umfragen.titel`, `umfragen.finaler_termin`, `umfragen.status`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.ort` (owner: intent `umfrage-anlegen`)\n- `umfragen.titel` (owner: intent `umfrage-anlegen`)\n- `umfragen.beschreibung` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.ende` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.beginn` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.umfrage` (owner: intent `umfrage-anlegen`)\n- `antworten.umfrage` (owner: intent `termin-abstimmen-page`)\n- `antworten.terminvorschlag` (owner: intent `termin-abstimmen-page`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
+    },
+    {
+      "slug": "termin-abstimmen-page",
+      "label": {
+        "de": "Termin abstimmen",
+        "en": "Vote on date"
+      },
+      "description": "Die öffentliche Seite sendet bei jeder Antwort alle fünf Pflichtfelder mit: umfrage, terminvorschlag, antwort, teilnehmer_vorname und teilnehmer_nachname. Die Namen werden einmalig im Namensblock über der Tabelle eingetragen und bei jedem Absenden automatisch aus dem Namensformular ergänzt — der Teilnehmende tippt sie nicht je Zeile neu ein.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "antworten",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "umfrage": "picked",
+            "terminvorschlag": "picked"
+          },
+          "multiple": false,
+          "needs": {},
+          "defaults": []
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `termin-abstimmen-page` — Termin abstimmen\nDie öffentliche Seite sendet bei jeder Antwort alle fünf Pflichtfelder mit: umfrage, terminvorschlag, antwort, teilnehmer_vorname und teilnehmer_nachname. Die Namen werden einmalig im Namensblock über der Tabelle eingetragen und bei jedem Absenden automatisch aus dem Namensformular ergänzt — der Teilnehmende tippt sie nicht je Zeile neu ein.\n\n## Your hook — import it, never rebuild what it owns\n`import { useTerminAbstimmenPageFlow } from '@/lib/journey/flows/TerminAbstimmenPage';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: umfrage, terminvorschlag), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Vor- und Nachname einmalig eintragen\n2. Je Terminvorschlag Ja, Vielleicht oder Nein wählen und absenden\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `antworten`:\n    - `umfrage`: from the record the user picks in this flow\n    - `terminvorschlag`: from the record the user picks in this flow\n\n## Narrow these picks (the plan has no filter for them — J-3)\n- `umfrage` picks `umfragen`, but the plan calls 'status' its status field: pass `where: { umfrage: r => … }` to the hook so the step offers only the records that belong here (the open ones, the ones of the picked parent) — never every record of every state\n- `terminvorschlag` picks `terminvorschlaege`, but it belongs to umfragen, which this flow picks too: pass `where: { terminvorschlag: r => … }` to the hook so the step offers only the records that belong here (the open ones, the ones of the picked parent) — never every record of every state\n\n## Success page\n- shows: `antworten.antwort`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.ort` (owner: intent `umfrage-anlegen`)\n- `umfragen.titel` (owner: intent `umfrage-anlegen`)\n- `umfragen.status` (owner: intent `umfrage-anlegen`)\n- `umfragen.beschreibung` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.ende` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.beginn` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.umfrage` (owner: intent `umfrage-anlegen`)\n- `umfragen.finaler_termin` (owner: intent `umfrage-abschliessen`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
     }
   ],
   "public_pages": [
@@ -116,7 +141,7 @@
             "finaler_termin"
           ],
           "filter": null,
-          "max_records": null
+          "max_records": 500
         },
         {
           "entity": "terminvorschlaege",
@@ -126,7 +151,7 @@
             "umfrage"
           ],
           "filter": null,
-          "max_records": null
+          "max_records": 500
         },
         {
           "entity": "antworten",
@@ -138,25 +163,25 @@
             "antwort"
           ],
           "filter": null,
-          "max_records": null
+          "max_records": 500
         }
       ],
       "creates": [
         {
           "entity": "antworten",
           "fields": {
+            "antwort": "user",
             "umfrage": "picked",
             "terminvorschlag": "picked",
             "teilnehmer_vorname": "user",
-            "teilnehmer_nachname": "user",
-            "antwort": "user"
+            "teilnehmer_nachname": "user"
           },
           "fixed": {}
         }
       ],
       "visitor_fields": [],
       "page_sets": [],
-      "brief": "# Public page `termin-abstimmen`\nTeilnehmende öffnen den Link ihrer Umfrage ohne Anmeldung und sehen nur diese eine Umfrage: oben die Termine, darunter die Namen aller bisherigen Teilnehmenden mit ihren Antworten. In der letzten Zeile tragen sie Vor- und Nachname ein und wählen bei jedem Termin Ja, Vielleicht oder Nein; ein Klick speichert die ganze Zeile, sie erscheint sofort in der Tabelle. Unter jedem Termin stehen die Anzahl Ja und Vielleicht, der Termin mit den meisten Ja ist hervorgehoben. Ist die Umfrage geschlossen, zeigt die Seite den finalen Termin und die Tabelle, abstimmen ist nicht mehr möglich. Eine Zeile darf nie doppelt ankommen. Für das Handy ausgelegt.\n\n## Lists (declare exactly these in the surface)\n- `umfragen`: columns `titel`, `beschreibung`, `ort`, `status`, `finaler_termin`\n- `terminvorschlaege`: columns `beginn`, `ende`, `umfrage`\n- `antworten`: columns `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`, `antwort`\n\n## Creates (declare exactly these in the surface)\n- `antworten`: visitor fields `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`, `antwort`\n\n## Only the linked record's children\n- `terminvorschlaege`, `antworten`: keep ONLY the rows whose reference to `umfragen` is the id from `?umfrage=` (`fieldRef(r, '<its reference field>') === linkedId`, the field is in the list's columns) — never `records[0]` of all (EF-27: the first ACTIVE interaction app-wide was another event's). The send-time check compares the same: the pointer AND the linked record.\n\n## Link parameter (declare exactly this in the surface)\n- `link_param: { name: 'umfrage', entity: 'umfragen', label_field: 'titel' }` — the page opens as `#/public/termin-abstimmen?umfrage=<id>` and reads THAT `umfragen` record from its list endpoint; without the parameter it shows a short notice (never a list to pick from — the owner hands out one link per record).\n\n## Availability — mechanical, write nothing for it\nA picker (`useRecordSearch`) never offers a record another record already takes (a booked slot) — the layer leaves it out. To SHOW booked periods, call `useOccupancy(port, '<entity>')` and hand `blocked` to AvailabilityRangePicker; the integration gives the page exactly that read (dates or the reference, never who booked). Never declare a list of bookings with names or contacts to work availability out yourself.\n\nPublish: never from here — every page starts as a draft; the owner publishes it under Verwaltung → Öffentliche Seiten after the build (the plan wishes it published)\n"
+      "brief": "# Public page `termin-abstimmen`\nTeilnehmende öffnen den Link ihrer Umfrage ohne Anmeldung und sehen nur diese eine Umfrage: oben die Termine, darunter die Namen aller bisherigen Teilnehmenden mit ihren Antworten. In der letzten Zeile tragen sie Vor- und Nachname ein und wählen bei jedem Termin Ja, Vielleicht oder Nein; ein Klick speichert die ganze Zeile, sie erscheint sofort in der Tabelle. Unter jedem Termin stehen die Anzahl Ja und Vielleicht, der Termin mit den meisten Ja ist hervorgehoben. Ist die Umfrage geschlossen, zeigt die Seite den finalen Termin und die Tabelle, abstimmen ist nicht mehr möglich. Eine Zeile darf nie doppelt ankommen. Für das Handy ausgelegt.\n\n## Lists (declare exactly these in the surface)\n- `umfragen`: columns `titel`, `beschreibung`, `ort`, `status`, `finaler_termin`, max_records 500\n- `terminvorschlaege`: columns `beginn`, `ende`, `umfrage`, max_records 500\n- `antworten`: columns `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`, `antwort`, max_records 500\n\n## Creates (declare exactly these in the surface)\n- `antworten`: visitor fields `antwort`, `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`\n\n## Availability — mechanical, write nothing for it\nA picker (`useRecordSearch`) never offers a record another record already takes (a booked slot) — the layer leaves it out. To SHOW booked periods, call `useOccupancy(port, '<entity>')` and hand `blocked` to AvailabilityRangePicker; the integration gives the page exactly that read (dates or the reference, never who booked). Never declare a list of bookings with names or contacts to work availability out yourself.\n\nPublish: never from here — every page starts as a draft; the owner publishes it under Verwaltung → Öffentliche Seiten after the build (the plan wishes it published)\n"
     }
   ],
   "tools": [
@@ -177,25 +202,31 @@
     {
       "wish": "Antworten je Umfrage und Termin zählen",
       "feature": "distribution_view"
+    },
+    {
+      "wish": "Absenden scheitert mit 400, weil teilnehmer_vorname und teilnehmer_nachname fehlen",
+      "feature": "record_form"
     }
   ],
   "ownership": {
     "umfragen": {
-      "titel": "intent:umfrage-anlegen",
-      "beschreibung": "intent:umfrage-anlegen",
       "ort": "intent:umfrage-anlegen",
+      "titel": "intent:umfrage-anlegen",
       "status": "intent:umfrage-abschliessen",
+      "beschreibung": "intent:umfrage-anlegen",
       "finaler_termin": "intent:umfrage-abschliessen"
     },
     "terminvorschlaege": {
-      "umfrage": "intent:umfrage-anlegen",
+      "ende": "intent:umfrage-anlegen",
       "beginn": "intent:umfrage-anlegen",
-      "ende": "intent:umfrage-anlegen"
+      "umfrage": "intent:umfrage-anlegen"
     },
     "antworten": {
+      "umfrage": "intent:termin-abstimmen-page",
+      "terminvorschlag": "intent:termin-abstimmen-page",
       "antwort": "tool:antwort-doppelt-zuruecksetzen",
-      "teilnehmer_nachname": "tool:antwort-doppelt-zuruecksetzen",
-      "teilnehmer_vorname": "tool:antwort-doppelt-zuruecksetzen"
+      "teilnehmer_vorname": "tool:antwort-doppelt-zuruecksetzen",
+      "teilnehmer_nachname": "tool:antwort-doppelt-zuruecksetzen"
     }
   },
   "dashboard": {

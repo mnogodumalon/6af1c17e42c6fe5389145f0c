@@ -165,6 +165,8 @@ export default function TerminAbstimmen() {
       values: () => ({
         umfrage: linkedId,
         terminvorschlag: t.id,
+        teilnehmer_vorname: String(nameRef.current.get('teilnehmer_vorname') ?? '').trim(),
+        teilnehmer_nachname: String(nameRef.current.get('teilnehmer_nachname') ?? '').trim(),
         antwort: pickedRef.current[t.id],
       }),
     }));
