@@ -69,7 +69,6 @@ export default function TerminAbstimmen() {
   const [loading, setLoading] = useState(true);
   const [picked, setPicked] = useState<Record<string, Answer>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     loadPublicPagesConfig(SLUG)
@@ -177,6 +176,32 @@ export default function TerminAbstimmen() {
     plan,
     {
       draftKey: `termin-abstimmen-${linkedId ?? 'x'}`,
+      // Runs before every send and every automatic resend; a network failure here
+      // propagates so the layer treats it as offline and keeps the entries.
+      check: async ctx => {
+        if (!linkedId) return null;
+        const [freshUmfrage, freshAntworten] = await Promise.all([ctx.port.get('umfragen', linkedId), ctx.port.list('antworten')]);
+        if (freshUmfrage && fieldLookup(freshUmfrage, 'status')?.key === 'geschlossen') {
+          void umfragenLive.reload();
+          return tx('Die Umfrage wurde inzwischen geschlossen.');
+        }
+        // Once a step is written, the name is ours — a resend must not refuse itself.
+        if (Object.keys(ctx.done).length > 0) return null;
+        const mine = nameKey(
+          String(nameRef.current.get('teilnehmer_vorname') ?? ''),
+          String(nameRef.current.get('teilnehmer_nachname') ?? ''),
+        );
+        const dup = freshAntworten.some(
+          r =>
+            fieldRef(r, 'umfrage') === linkedId &&
+            nameKey(fieldText(r, 'teilnehmer_vorname'), fieldText(r, 'teilnehmer_nachname')) === mine,
+        );
+        if (dup) {
+          void antwortenLive.reload();
+          return tx('Dieser Name hat bereits abgestimmt.');
+        }
+        return null;
+      },
       onSuccess: () => {
         void antwortenLive.reload();
       },
@@ -192,34 +217,6 @@ export default function TerminAbstimmen() {
     if (missing) {
       setFormError(tx('Bitte wähle bei jedem Termin Ja, Vielleicht oder Nein.'));
       return;
-    }
-    setChecking(true);
-    try {
-      const [freshUmfrage, freshAntworten] = await Promise.all([port.get('umfragen', linkedId), port.list('antworten')]);
-      if (freshUmfrage && fieldLookup(freshUmfrage, 'status')?.key === 'geschlossen') {
-        setFormError(tx('Die Umfrage wurde inzwischen geschlossen.'));
-        void umfragenLive.reload();
-        return;
-      }
-      const mine = nameKey(
-        String(nameForm.get('teilnehmer_vorname') ?? ''),
-        String(nameForm.get('teilnehmer_nachname') ?? ''),
-      );
-      const dup = freshAntworten.some(
-        r =>
-          fieldRef(r, 'umfrage') === linkedId &&
-          nameKey(fieldText(r, 'teilnehmer_vorname'), fieldText(r, 'teilnehmer_nachname')) === mine,
-      );
-      if (dup && !submit.error) {
-        setFormError(tx('Dieser Name hat bereits abgestimmt.'));
-        void antwortenLive.reload();
-        return;
-      }
-    } catch {
-      setFormError(tx('Das hat gerade nicht geklappt. Bitte versuche es noch einmal.'));
-      return;
-    } finally {
-      setChecking(false);
     }
     await submit.run();
   };
@@ -419,7 +416,10 @@ export default function TerminAbstimmen() {
               <div className="space-y-3">
                 <FieldErrorSummary forms={[nameForm]} />
                 {formError && <p className="text-sm text-destructive">{formError}</p>}
-                {submit.error && !submit.offline && (
+                {submit.error?.name === 'JourneyRefused' && (
+                  <p className="text-sm text-destructive">{submit.error.message}</p>
+                )}
+                {submit.error && !submit.offline && submit.error.name !== 'JourneyRefused' && (
                   <p className="text-sm text-destructive">{tx('Das Speichern hat nicht geklappt. Tippe noch einmal auf Speichern – nichts wird doppelt eingetragen.')}</p>
                 )}
                 {submit.offline && (
@@ -428,10 +428,10 @@ export default function TerminAbstimmen() {
                 <Button
                   type="button"
                   className="w-full sm:w-auto"
-                  disabled={submit.submitting || checking}
+                  disabled={submit.submitting}
                   onClick={() => void handleSave()}
                 >
-                  {submit.submitting || checking ? tx('Wird gespeichert …') : tx('Antworten speichern')}
+                  {submit.submitting ? tx('Wird gespeichert …') : tx('Antworten speichern')}
                 </Button>
               </div>
             )}

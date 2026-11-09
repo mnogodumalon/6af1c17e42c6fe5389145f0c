@@ -66,7 +66,7 @@ createRecordUrl from the service. Note the lowercase `l` in the service path.
   ✚ EnrichedTerminvorschlaege adds ONLY umfrageName — via enrichTerminvorschlaege(terminvorschlaege, { umfragenMap }), all maps required
   → umfrage links to app_id 6af1c16b74cfdb7dfd337258
 - Antworten (antworten): umfrage!^[applookup/select], terminvorschlag!^[applookup/select], teilnehmer_vorname!^[string/text] "Vorname", teilnehmer_nachname!^[string/text] "Nachname", antwort!^[lookup/radio: ja|vielleicht|nein]
-  ≡ 3 records at build time
+  ≡ 14 records at build time
   ◈ antwort → choice (3 options, ChoiceGroup) · umfrage → record (umfragen, EntitySelectStep) · terminvorschlag → record (terminvorschlaege, EntitySelectStep)
   ⚙ getAntworten() · getAntwortenEntry(id) · createAntwortenEntry(fields) · updateAntwortenEntry(id, fields) · deleteAntwortenEntry(id) · queryAntworten({ filter, orderby, limit, offset, fields }) · countAntworten(filter?)
   ✚ EnrichedAntworten adds ONLY umfrageName, terminvorschlagName — via enrichAntworten(antworten, { umfragenMap, terminvorschlaegeMap }), all maps required
