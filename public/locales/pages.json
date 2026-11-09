@@ -1,0 +1,31 @@
+{
+  "pages": {
+    "en": {
+      "Alle offenen Umfragen haben Antworten.": "All open polls have responses.",
+      "Alle offenen Umfragen sind entschieden — gute Planung!": "All open polls have been decided — great planning!",
+      "Bereit zum Festlegen": "Ready to finalize",
+      "Besten Termin festlegen & schließen": "Set best date & close",
+      "Festlegen": "Finalize",
+      "Geschlossen": "Closed",
+      "Ja": "Yes",
+      "Keine Umfragen in dieser Ansicht.": "No polls in this view.",
+      "Lege deine erste Umfrage an und teile den Link mit den Teilnehmenden.": "Create your first poll and share the link with participants.",
+      "Link kopieren": "Copy link",
+      "Link kopiert": "Link copied",
+      "Link teilen, um Stimmen zu sammeln": "Share link to collect votes",
+      "Neue Umfrage": "New poll",
+      "Noch keine Terminvorschläge": "No date proposals yet",
+      "Noch ohne Antworten": "No responses yet",
+      "Offen": "Open",
+      "Ohne finalen Termin": "No final date",
+      "QR-Code öffnen": "Open QR code",
+      "Sobald Ja-Stimmen eintreffen, erscheint hier der beste Termin.": "As soon as Yes votes come in, the best date will appear here.",
+      "Teilnahmelink noch nicht veröffentlicht": "Participation link not yet published",
+      "Vielleicht": "Maybe",
+      "{0} Ja": "{0} Yes",
+      "{0} Teilnehmende": "{0} participants",
+      "{0} wartet auf einen finalen Termin.": "{0} is waiting for a final date."
+    }
+  },
+  "v": 1
+}

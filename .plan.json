@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "language": "de",
+  "understanding": {
+    "summary": "Du legst eine Umfrage mit Titel, Beschreibung und Ort an und trägst gleich mehrere Terminvorschläge mit Beginn und Ende ein. Teilnehmende öffnen ohne Anmeldung die Seite ihrer Umfrage und sehen eine Tabelle: oben die Termine, darunter alle bisherigen Teilnehmenden mit ihren Antworten. In der letzten Zeile tragen sie ihren Namen ein und wählen je Termin Ja, Vielleicht oder Nein; die ganze Zeile wird mit einem Klick gespeichert, nie doppelt, und erscheint sofort. Unter jedem Termin stehen die Anzahl Ja und Vielleicht, der Termin mit den meisten Ja ist hervorgehoben. Du siehst alle Antworten im Dashboard, legst den finalen Termin fest und schließt die Umfrage; dann sehen Teilnehmende den finalen Termin und die Tabelle, abstimmen geht nicht mehr. Alles ist für das Handy ausgelegt.",
+    "outside_users": [
+      {
+        "who": "Teilnehmende",
+        "does": "öffnen den Link ohne Anmeldung, sehen die Tabelle ihrer Umfrage, tragen ihren Namen ein und antworten je Termin mit Ja, Vielleicht oder Nein"
+      }
+    ],
+    "roles": [
+      "Organisator (Umfrage anlegen, Antworten auswerten, finalen Termin festlegen, Umfrage schließen)",
+      "Teilnehmende (ohne Anmeldung)"
+    ],
+    "main_tasks": [
+      "Umfrage mit mehreren Terminvorschlägen anlegen",
+      "Link und QR-Code je Umfrage teilen",
+      "Antworten im Dashboard auswerten",
+      "Finalen Termin festlegen und Umfrage schließen"
+    ],
+    "platform_roles": [
+      {
+        "persona": "Organisator",
+        "role": "datenverarbeitung",
+        "apps": [
+          "umfragen",
+          "terminvorschlaege",
+          "antworten"
+        ]
+      }
+    ],
+    "wish_kind": "plain",
+    "wish_signals": []
+  },
+  "flows": [
+    {
+      "slug": "umfrage-anlegen",
+      "label": {
+        "de": "Umfrage mit Terminen anlegen",
+        "en": "Create poll with dates"
+      },
+      "description": "Der Organisator legt eine Umfrage mit Titel, Beschreibung und Ort an und trägt gleich mehrere Terminvorschläge mit Beginn und Ende ein.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "umfragen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "titel": "user",
+            "beschreibung": "user",
+            "ort": "user",
+            "status": "fixed:offen"
+          },
+          "multiple": false,
+          "needs": {},
+          "defaults": []
+        },
+        {
+          "entity": "terminvorschlaege",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "umfrage": "picked",
+            "beginn": "user",
+            "ende": "user"
+          },
+          "multiple": true,
+          "needs": {},
+          "defaults": []
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `umfrage-anlegen` — Umfrage mit Terminen anlegen\nDer Organisator legt eine Umfrage mit Titel, Beschreibung und Ort an und trägt gleich mehrere Terminvorschläge mit Beginn und Ende ein.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAnlegenFlow } from '@/lib/journey/flows/UmfrageAnlegen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: umfrage), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Titel, Beschreibung und Ort der Umfrage eingeben\n2. Mehrere Terminvorschläge mit Beginn und Ende erfassen\n3. Speichern; die Umfrage ist offen und der Link steht bereit\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `umfragen`:\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `beschreibung`: the user enters it (bind it through the layer: form.field/…)\n    - `ort`: the user enters it (bind it through the layer: form.field/…)\n    - `status`: fixed value `offen` — set it in the plan step's values, never ask\n- creates `terminvorschlaege` — SEVERAL per run: `flow.lists.terminvorschlaege` holds the entries (add/remove/edit), render the editor's fields inside `<ListEntries list={flow.lists.terminvorschlaege}>` on their own step; the plan creates one record per entry:\n    - `umfrage`: from the record the user picks in this flow\n    - `beginn`: the user enters it (bind it through the layer: form.field/…)\n    - `ende`: the user enters it (bind it through the layer: form.field/…)\n\n## Narrow these picks (the plan has no filter for them — J-3)\n- `umfrage` picks `umfragen`, but the plan calls 'status' its status field: pass `where: { umfrage: r => … }` to the hook so the step offers only the records that belong here (the open ones, the ones of the picked parent) — never every record of every state\n\n## Success page\n- shows: `umfragen.titel`, `umfragen.status`\n- next flows to offer: `umfrage-abschliessen`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.finaler_termin` (owner: intent `umfrage-abschliessen`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
+    },
+    {
+      "slug": "umfrage-abschliessen",
+      "label": {
+        "de": "Finalen Termin festlegen und Umfrage schließen",
+        "en": "Set final date and close poll"
+      },
+      "description": "Der Organisator wählt aus den Terminvorschlägen der Umfrage den finalen Termin und schließt die Umfrage; danach ist keine Abstimmung mehr möglich.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "umfragen",
+          "op": "update",
+          "when": "always",
+          "fields": {
+            "finaler_termin": "picked",
+            "status": "fixed:geschlossen"
+          },
+          "multiple": false,
+          "needs": {},
+          "defaults": []
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `umfrage-abschliessen` — Finalen Termin festlegen und Umfrage schließen\nDer Organisator wählt aus den Terminvorschlägen der Umfrage den finalen Termin und schließt die Umfrage; danach ist keine Abstimmung mehr möglich.\n\n## Your hook — import it, never rebuild what it owns\n`import { useUmfrageAbschliessenFlow } from '@/lib/journey/flows/UmfrageAbschliessen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: finaler_termin), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. This flow CHANGES a record of `umfragen`: `{...flow.picks.umfragen.select} {...flow.pick('umfragen')}` picks it, the hook prefills the form with its current values and updates THAT record — never a create step, never a list from useDashboardData. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Offene Umfrage wählen\n2. Finalen Termin aus den Terminvorschlägen dieser Umfrage wählen\n3. Umfrage schließen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- updates `umfragen`:\n    - `finaler_termin`: from the record the user picks in this flow\n    - `status`: fixed value `geschlossen` — set it in the plan step's values, never ask\n\n## Reads\n- `umfragen` columns titel, ort, status\n- `terminvorschlaege` columns beginn, ende, umfrage\n\n## Success page\n- the success page offers the way back — `undo={flow.undo}` on <SuccessStep>: „Umfrage wieder öffnen“ sets status=offen\n- shows: `umfragen.titel`, `umfragen.finaler_termin`, `umfragen.status`\n\n## Never write these — another flow or a tool owns them\n- `umfragen.titel` (owner: intent `umfrage-anlegen`)\n- `umfragen.beschreibung` (owner: intent `umfrage-anlegen`)\n- `umfragen.ort` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.umfrage` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.beginn` (owner: intent `umfrage-anlegen`)\n- `terminvorschlaege.ende` (owner: intent `umfrage-anlegen`)\n- `antworten.antwort` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_nachname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n- `antworten.teilnehmer_vorname` (owner: tool `antwort-doppelt-zuruecksetzen`)\n"
+    }
+  ],
+  "public_pages": [
+    {
+      "slug": "termin-abstimmen",
+      "purpose": "Teilnehmende öffnen den Link ihrer Umfrage ohne Anmeldung und sehen nur diese eine Umfrage: oben die Termine, darunter die Namen aller bisherigen Teilnehmenden mit ihren Antworten. In der letzten Zeile tragen sie Vor- und Nachname ein und wählen bei jedem Termin Ja, Vielleicht oder Nein; ein Klick speichert die ganze Zeile, sie erscheint sofort in der Tabelle. Unter jedem Termin stehen die Anzahl Ja und Vielleicht, der Termin mit den meisten Ja ist hervorgehoben. Ist die Umfrage geschlossen, zeigt die Seite den finalen Termin und die Tabelle, abstimmen ist nicht mehr möglich. Eine Zeile darf nie doppelt ankommen. Für das Handy ausgelegt.",
+      "publish": true,
+      "lists": [
+        {
+          "entity": "umfragen",
+          "columns": [
+            "titel",
+            "beschreibung",
+            "ort",
+            "status",
+            "finaler_termin"
+          ],
+          "filter": null,
+          "max_records": null
+        },
+        {
+          "entity": "terminvorschlaege",
+          "columns": [
+            "beginn",
+            "ende",
+            "umfrage"
+          ],
+          "filter": null,
+          "max_records": null
+        },
+        {
+          "entity": "antworten",
+          "columns": [
+            "umfrage",
+            "terminvorschlag",
+            "teilnehmer_vorname",
+            "teilnehmer_nachname",
+            "antwort"
+          ],
+          "filter": null,
+          "max_records": null
+        }
+      ],
+      "creates": [
+        {
+          "entity": "antworten",
+          "fields": {
+            "umfrage": "picked",
+            "terminvorschlag": "picked",
+            "teilnehmer_vorname": "user",
+            "teilnehmer_nachname": "user",
+            "antwort": "user"
+          },
+          "fixed": {}
+        }
+      ],
+      "visitor_fields": [],
+      "page_sets": [],
+      "brief": "# Public page `termin-abstimmen`\nTeilnehmende öffnen den Link ihrer Umfrage ohne Anmeldung und sehen nur diese eine Umfrage: oben die Termine, darunter die Namen aller bisherigen Teilnehmenden mit ihren Antworten. In der letzten Zeile tragen sie Vor- und Nachname ein und wählen bei jedem Termin Ja, Vielleicht oder Nein; ein Klick speichert die ganze Zeile, sie erscheint sofort in der Tabelle. Unter jedem Termin stehen die Anzahl Ja und Vielleicht, der Termin mit den meisten Ja ist hervorgehoben. Ist die Umfrage geschlossen, zeigt die Seite den finalen Termin und die Tabelle, abstimmen ist nicht mehr möglich. Eine Zeile darf nie doppelt ankommen. Für das Handy ausgelegt.\n\n## Lists (declare exactly these in the surface)\n- `umfragen`: columns `titel`, `beschreibung`, `ort`, `status`, `finaler_termin`\n- `terminvorschlaege`: columns `beginn`, `ende`, `umfrage`\n- `antworten`: columns `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`, `antwort`\n\n## Creates (declare exactly these in the surface)\n- `antworten`: visitor fields `umfrage`, `terminvorschlag`, `teilnehmer_vorname`, `teilnehmer_nachname`, `antwort`\n\n## Only the linked record's children\n- `terminvorschlaege`, `antworten`: keep ONLY the rows whose reference to `umfragen` is the id from `?umfrage=` (`fieldRef(r, '<its reference field>') === linkedId`, the field is in the list's columns) — never `records[0]` of all (EF-27: the first ACTIVE interaction app-wide was another event's). The send-time check compares the same: the pointer AND the linked record.\n\n## Link parameter (declare exactly this in the surface)\n- `link_param: { name: 'umfrage', entity: 'umfragen', label_field: 'titel' }` — the page opens as `#/public/termin-abstimmen?umfrage=<id>` and reads THAT `umfragen` record from its list endpoint; without the parameter it shows a short notice (never a list to pick from — the owner hands out one link per record).\n\n## Availability — mechanical, write nothing for it\nA picker (`useRecordSearch`) never offers a record another record already takes (a booked slot) — the layer leaves it out. To SHOW booked periods, call `useOccupancy(port, '<entity>')` and hand `blocked` to AvailabilityRangePicker; the integration gives the page exactly that read (dates or the reference, never who booked). Never declare a list of bookings with names or contacts to work availability out yourself.\n\nPublish: never from here — every page starts as a draft; the owner publishes it under Verwaltung → Öffentliche Seiten after the build (the plan wishes it published)\n"
+    }
+  ],
+  "tools": [
+    {
+      "id": "antwort-doppelt-zuruecksetzen",
+      "purpose": "Erkennt beim Anlegen einer Antwort, ob dieselbe Person (Vor- und Nachname) für denselben Terminvorschlag schon eine frühere Antwort hat; die frühere Antwort bleibt bestehen, die spätere wird gelöscht-markiert, indem sie entfernt wird."
+    },
+    {
+      "id": "antwort-bei-geschlossener-umfrage-entfernen",
+      "purpose": "Eine Antwort darf nur zu einer offenen Umfrage ankommen. Die öffentliche Seite kann das nicht verweigern, daher entfernt dieses Werkzeug Antworten zu geschlossenen Umfragen."
+    }
+  ],
+  "covered_by_platform": [
+    {
+      "wish": "Ich sehe alle Antworten",
+      "feature": "list_page"
+    },
+    {
+      "wish": "Antworten je Umfrage und Termin zählen",
+      "feature": "distribution_view"
+    }
+  ],
+  "ownership": {
+    "umfragen": {
+      "titel": "intent:umfrage-anlegen",
+      "beschreibung": "intent:umfrage-anlegen",
+      "ort": "intent:umfrage-anlegen",
+      "status": "intent:umfrage-abschliessen",
+      "finaler_termin": "intent:umfrage-abschliessen"
+    },
+    "terminvorschlaege": {
+      "umfrage": "intent:umfrage-anlegen",
+      "beginn": "intent:umfrage-anlegen",
+      "ende": "intent:umfrage-anlegen"
+    },
+    "antworten": {
+      "antwort": "tool:antwort-doppelt-zuruecksetzen",
+      "teilnehmer_nachname": "tool:antwort-doppelt-zuruecksetzen",
+      "teilnehmer_vorname": "tool:antwort-doppelt-zuruecksetzen"
+    }
+  },
+  "dashboard": {
+    "focus": [
+      "Offene Umfragen mit Anzahl Antworten",
+      "Umfragen ohne finalen Termin",
+      "Ja-Stimmen je Terminvorschlag"
+    ],
+    "hints": [
+      "Link und QR-Code je Umfrage mit einem Klick kopieren bzw. in neuem Tab öffnen",
+      "Finalen Termin festlegen und Umfrage schließen",
+      "Für das Handy optimiert"
+    ],
+    "views": [],
+    "writes": [],
+    "wishes": []
+  }
+}
